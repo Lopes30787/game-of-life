@@ -23,6 +23,7 @@ void initialize() {
 
 //Create copy of gol for neighbour counting purposes.
 void copy_gol() {
+    #pragma omp parallel for
     for(int i = 0; i < SIZE; i++) {
         for(int j = 0; j < SIZE; j++) {
             GOL_copy[i][j] = GOL[i][j];
@@ -31,11 +32,12 @@ void copy_gol() {
 }
 
 //TODO: Paralelizar isto
-int iteration() {
+void iteration() {
     copy_gol();
     int alive;
     int population = 0;
 
+    #pragma omp parallel for private(alive)
     for(int i = 1; i < SIZE-1; i++) {
         for(int j = 1; j < SIZE-1; j++) {
             alive = 0;
@@ -74,29 +76,34 @@ int iteration() {
             //Any live cell with two or three live neighbours lives, unchanged, to the next generation.
             else if ((alive == 2 || alive == 3) && GOL_copy[i][j] == 1) {
                 GOL[i][j] = 1;
-                population++;
             }
 
             //Any dead cell with exactly three live neighbours will come to life.
             else if (alive == 3 && GOL_copy[i][j] == 0) {
                 GOL[i][j] = 1;
-                population++;
             }
         }
     }
-    return population;
 }
 
 int main() {
     initialize();
 
-    for (int i = 0; i<100; i++) {
-        int population = iteration();
+    for (int i = 0; i<10; i++) {
+        iteration();
 
-        //printf("%d\n", population);
-        if (i == 9 || i == 99) {
-            printf("%d\n", population);
+        //Population check
+        
+        /*int population = 0;
+        for(int i = 0; i < SIZE; i++) {
+            for(int j = 0; j < SIZE; j++) {
+                if (GOL[i][j] == 1) {
+                    population++;
+                }
+            }
         }
+        printf("%d\n", population);*/
+        
     }
 
     return 0;
